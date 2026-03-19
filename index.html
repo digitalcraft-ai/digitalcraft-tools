@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digital Craft Tools - 無料Webツール集</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f8fafc;color:#1e293b;min-height:100vh;display:flex;flex-direction:column}
+header{background:linear-gradient(135deg,#2563eb,#10b981);color:#fff;padding:3rem 1rem;text-align:center}
+header h1{font-size:2rem;margin-bottom:.5rem}
+header p{opacity:.9;font-size:1.1rem}
+main{max-width:800px;margin:2rem auto;padding:0 1rem;flex:1}
+.tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem;margin-top:1.5rem}
+.card{background:#fff;border-radius:12px;padding:2rem;box-shadow:0 1px 3px rgba(0,0,0,.1);transition:transform .2s,box-shadow .2s;text-decoration:none;color:inherit}
+.card:hover{transform:translateY(-4px);box-shadow:0 8px 25px rgba(0,0,0,.1)}
+.card h2{color:#2563eb;font-size:1.3rem;margin-bottom:.5rem}
+.card p{color:#64748b;line-height:1.6}
+.badge{display:inline-block;background:#dbeafe;color:#2563eb;padding:.25rem .75rem;border-radius:999px;font-size:.8rem;margin-top:1rem}
+footer{text-align:center;padding:2rem;color:#94a3b8;font-size:.9rem;border-top:1px solid #e2e8f0;margin-top:3rem}
+footer a{color:#2563eb;text-decoration:none}
+</style>
+</head>
+<body>
+<header>
+<h1>Digital Craft Tools</h1>
+<p>フリーランス・開発者のための無料Webツール集</p>
+</header>
+<main>
+<div class="tools">
+<a href="ogp-checker.html" class="card">
+<h2>OGPチェッカー</h2>
+<p>HTMLソースからOGPタグを解析し、Twitter・Facebook・LINEでのプレビューをシミュレート。不足タグの警告付き。</p>
+<span class="badge">SEO・SNS</span>
+</a>
+<a href="meta-generator.html" class="card">
+<h2>メタタグジェネレーター</h2>
+<p>フォームに入力するだけでOGP・Twitter Card・基本metaタグを自動生成。ワンクリックコピー対応。</p>
+<span class="badge">SEO・HTML</span>
+</a>
+<a href="prompt-generator.html" class="card">
+<h2>プロンプトジェネレーター</h2>
+<p>目的・トーンを選ぶだけでChatGPT用のプロンプトを自動生成。ビジネスメール、ブログ、SNS投稿など10カテゴリ対応。</p>
+<span class="badge">AI活用</span>
+</a>
+<a href="income-simulator.html" class="card">
+<h2>フリーランス収支シミュレーター</h2>
+<p>月収目標から必要な案件数・売上を逆算。税金・保険料も自動計算。結果をTwitterでシェア可能。</p>
+<span class="badge">フリーランス</span>
+</a>
+</div>
+</main>
+<footer>
+<p>&copy; 2026 デジタルクラフト合同会社 | <a href="https://note.com/digitalcraft_ai">Note</a> | <a href="https://booth.pm/">BOOTH</a></p>
+</footer>
+</body>
+</html>

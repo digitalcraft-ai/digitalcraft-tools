@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>フリーランス収支シミュレーター | デジタルクラフト合同会社</title>
+<meta name="description" content="月収目標から必要な案件数・売上を逆算。フリーランスの収支計画を簡単シミュレーション。">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --primary: #2563EB;
+  --primary-light: #3B82F6;
+  --primary-dark: #1D4ED8;
+  --secondary: #10B981;
+  --secondary-light: #34D399;
+  --bg: #F8FAFC;
+  --surface: #FFFFFF;
+  --text: #1E293B;
+  --text-secondary: #64748B;
+  --border: #E2E8F0;
+  --danger: #EF4444;
+  --warning: #F59E0B;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.08), 0 4px 6px rgba(0,0,0,0.05);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+.header {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: #fff;
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.header p {
+  font-size: 0.95rem;
+  opacity: 0.9;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .layout { grid-template-columns: 1fr; }
+  .header h1 { font-size: 1.35rem; }
+}
+
+.panel {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
+}
+
+.panel-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.panel-title .icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.panel-title .icon-input { background: #EFF6FF; color: var(--primary); }
+.panel-title .icon-result { background: #ECFDF5; color: var(--secondary); }
+
+.form-group {
+  margin-bottom: 1.1rem;
+}
+
+.form-label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 0.4rem;
+}
+
+.tooltip-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--border);
+  color: var(--text-secondary);
+  font-size: 0.65rem;
+  cursor: help;
+  position: relative;
+  flex-shrink: 0;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.tooltip-trigger .tooltip-text {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 400;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  width: 220px;
+  line-height: 1.5;
+  z-index: 100;
+  box-shadow: var(--shadow-lg);
+  pointer-events: none;
+}
+
+.tooltip-trigger .tooltip-text::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--text);
+}
+
+.tooltip-trigger:hover .tooltip-text,
+.tooltip-trigger:focus .tooltip-text {
+  display: block;
+}
+
+input[type="number"],
+select {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: var(--text);
+  background: var(--surface);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+}
+
+input[type="number"]:focus,
+select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+}
+
+.slider-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.slider-group input[type="range"] {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  outline: none;
+}
+
+.slider-group input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(37,99,235,0.3);
+}
+
+.slider-group input[type="range"]::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 4px rgba(37,99,235,0.3);
+}
+
+.slider-group input[type="number"] {
+  width: 100px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.unit {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+/* Results */
+.results-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+@media (max-width: 480px) {
+  .results-grid { grid-template-columns: 1fr; }
+}
+
+.result-card {
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.result-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.result-card.highlight {
+  background: linear-gradient(135deg, #EFF6FF 0%, #ECFDF5 100%);
+  border-color: var(--primary-light);
+}
+
+.result-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-bottom: 0.25rem;
+}
+
+.result-value {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+.result-value .small {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.result-card.highlight .result-value {
+  color: var(--primary);
+}
+
+/* Chart */
+.chart-section {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.chart-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 0.75rem;
+}
+
+.bar-chart {
+  display: flex;
+  height: 36px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+  box-shadow: var(--shadow);
+}
+
+.bar-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fff;
+  transition: width 0.4s ease;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.bar-segment.take-home { background: var(--secondary); }
+.bar-segment.tax { background: var(--primary); }
+.bar-segment.insurance { background: var(--warning); }
+.bar-segment.expense { background: #8B5CF6; }
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.25rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.legend-dot.take-home { background: var(--secondary); }
+.legend-dot.tax { background: var(--primary); }
+.legend-dot.insurance { background: var(--warning); }
+.legend-dot.expense { background: #8B5CF6; }
+
+/* Share */
+.share-section {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.25rem;
+  background: #000;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  font-family: inherit;
+}
+
+.share-btn:hover {
+  background: #1a1a1a;
+  transform: translateY(-1px);
+}
+
+.share-btn:active {
+  transform: translateY(0);
+}
+
+.share-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.copy-toast {
+  display: none;
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--secondary);
+  color: #fff;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  width: fit-content;
+}
+
+.copy-toast.show {
+  display: block;
+  animation: fadeInOut 2s ease forwards;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(4px); }
+  15% { opacity: 1; transform: translateY(0); }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Footer */
+.footer {
+  margin-top: 2rem;
+  padding: 2rem 1rem;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.footer-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.footer-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.footer-card {
+  display: block;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+
+.footer-card:hover {
+  border-color: var(--primary-light);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.footer-card-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.footer-card-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.footer-copy {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+/* Separator */
+.input-section-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+  margin-top: 0.5rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 2px solid #EFF6FF;
+}
+
+/* Warning */
+.warning-box {
+  display: none;
+  padding: 0.65rem 0.85rem;
+  background: #FEF3C7;
+  border: 1px solid #FDE68A;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: #92400E;
+  margin-bottom: 1rem;
+}
+
+.warning-box.show { display: block; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <h1>フリーランス収支シミュレーター</h1>
+  <p>月収目標から必要な案件数・売上を逆算しよう</p>
+</header>
+
+<div class="container">
+  <div class="layout">
+    <!-- 入力パネル -->
+    <div class="panel">
+      <div class="panel-title">
+        <span class="icon icon-input">&#9998;</span>
+        条件を入力
+      </div>
+
+      <div class="input-section-title">収入目標</div>
+
+      <div class="form-group">
+        <label class="form-label">
+          月収目標（手取り）
+          <span class="tooltip-trigger" tabindex="0">?
+            <span class="tooltip-text">税金・保険料・経費を差し引いた後に手元に残したい金額です。</span>
+          </span>
+        </label>
+        <div class="slider-group">
+          <input type="range" id="targetIncome" min="10" max="100" step="1" value="40">
+          <input type="number" id="targetIncomeNum" min="10" max="100" step="1" value="40">
+          <span class="unit">万円</span>
+        </div>
+      </div>
+
+      <div class="input-section-title">稼働条件</div>
+
+      <div class="form-group">
+        <label class="form-label">
+          月間稼働日数
+          <span class="tooltip-trigger" tabindex="0">?
+            <span class="tooltip-text">1ヶ月に仕事に充てる日数。土日祝を除くと約20日が目安です。</span>
+          </span>
+        </label>
+        <select id="workDays">
+          <option value="15">15日</option>
+          <option value="16">16日</option>
+          <option value="17">17日</option>
+          <option value="18">18日</option>
+          <option value="19">19日</option>
+          <option value="20" selected>20日</option>
+          <option value="21">21日</option>
+          <option value="22">22日</option>
+          <option value="23">23日</option>
+          <option value="24">24日</option>
+          <option value="25">25日</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">
+          1日の稼働時間
+          <span class="tooltip-trigger" tabindex="0">?
+            <span class="tooltip-text">実際にクライアントワークに充てる時間。営業・事務作業は含みません。</span>
+          </span>
+        </label>
+        <select id="workHours">
+          <option value="4">4時間</option>
+          <option value="5">5時間</option>
+          <option value="6">6時間</option>
+          <option value="7">7時間</option>
+          <option value="8" selected>8時間</option>
+          <option value="9">9時間</option>
+          <option value="10">10時間</option>
+        </select>
+      </div>
+
+      <div class="input-section-title">案件情報</div>
+
+      <div class="form-group">
+        <label class="form-label">
+          平均案件単価
+          <span class="tooltip-trigger" tabindex="0">?
+            <span class="tooltip-text">1案件あたりの報酬額です。過去の実績や相場を参考に入力してください。</span>
+          </span>
+        </label>
+        <div class="slider-group">
+          <input type="number" id="projectPrice" min="0.1" step="0.1" value="5" style="flex:1">
+          <span class="unit">万円</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">
+          1案件の所要時間
+          <span class="tooltip-trigger" tabindex="0">?
+            <span class="tooltip-text">1案件を完了するのにかかる作業時間。打合せ・修正時間も含めた見積もりを入力してください。</span>
+          </span>
+        </label>
+        <div class="slider-group">
+          <input type="number" id="projectHours" min="0.5" step="0.5" value="10" style="flex:1">
+          <span class="unit">時間</span>
+        </div>
+      </div>
+
+      <div class="input-section-title">経費・税金</div>
+
+      <div class="form-group">
+        <label class="form-label">
+          月額固定費
+          <span class="tooltip-trigger" tabindex="0">?
+            <span class="tooltip-text">家賃（事務所按分）、ツール代、通信費、サブスク費用など毎月発生する経費の合計です。</span>
+          </span>
+        </label>
+        <div class="slider-group">
+          <input type="number" id="fixedCost" min="0" step="0.5" value="5" style="flex:1">
+          <span class="unit">万円</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">
+          所得税率
+          <span class="tooltip-trigger" tabindex="0">?
+            <span class="tooltip-text">課税所得に応じた税率。195万円以下:5%、330万円以下:10%、695万円以下:20%、900万円以下:23%、1800万円以下:33%</span>
+          </span>
+        </label>
+        <select id="incomeTaxRate">
+          <option value="0.05">5%（課税所得195万円以下）</option>
+          <option value="0.10" selected>10%（課税所得330万円以下）</option>
+          <option value="0.20">20%（課税所得695万円以下）</option>
+          <option value="0.23">23%（課税所得900万円以下）</option>
+          <option value="0.33">33%（課税所得1800万円以下）</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">
+          住民税率
+          <span class="tooltip-trigger" tabindex="0">?
+            <span class="tooltip-text">住民税は全国一律で約10%です。</span>
+          </span>
+        </label>
+        <input type="text" value="10%（固定）" disabled style="width:100%;padding:0.6rem 0.75rem;border:1.5px solid var(--border);border-radius:8px;font-size:0.95rem;background:#F1F5F9;color:var(--text-secondary);">
+      </div>
+
+      <div class="form-group">
+        <label class="checkbox-group">
+          <input type="checkbox" id="includeInsurance" checked>
+          <span>国民健康保険・年金を含める</span>
+          <span class="tooltip-trigger" tabindex="0">?
+            <span class="tooltip-text">国民健康保険（約8%概算）と国民年金（月額約16,980円）を含めて計算します。</span>
+          </span>
+        </label>
+      </div>
+    </div>
+
+    <!-- 結果パネル -->
+    <div class="panel" id="resultsPanel">
+      <div class="panel-title">
+        <span class="icon icon-result">&#9889;</span>
+        シミュレーション結果
+      </div>
+
+      <div id="warningBox" class="warning-box"></div>
+
+      <div class="results-grid">
+        <div class="result-card">
+          <div class="result-label">
+            月間可処分時間
+            <span class="tooltip-trigger" tabindex="0">?
+              <span class="tooltip-text">稼働日数 x 1日の稼働時間 で算出。実際にクライアントワークに充てられる合計時間です。</span>
+            </span>
+          </div>
+          <div class="result-value" id="availableHours">160 <span class="small">時間</span></div>
+        </div>
+
+        <div class="result-card">
+          <div class="result-label">
+            月間最大案件数
+            <span class="tooltip-trigger" tabindex="0">?
+              <span class="tooltip-text">可処分時間 / 1案件あたり所要時間 の切り捨て。同時に受けられる案件数の上限です。</span>
+            </span>
+          </div>
+          <div class="result-value" id="maxProjects">16 <span class="small">件</span></div>
+        </div>
+
+        <div class="result-card highlight">
+          <div class="result-label">
+            必要な月間売上
+            <span class="tooltip-trigger" tabindex="0">?
+              <span class="tooltip-text">手取り目標 + 税金 + 保険料 + 固定費 の合計。この金額を稼ぐ必要があります。</span>
+            </span>
+          </div>
+          <div class="result-value" id="requiredRevenue">-- <span class="small">万円</span></div>
+        </div>
+
+        <div class="result-card highlight">
+          <div class="result-label">
+            必要な案件数
+            <span class="tooltip-trigger" tabindex="0">?
+              <span class="tooltip-text">必要売上 / 案件単価 の切り上げ。月間最大案件数を超える場合は警告が出ます。</span>
+            </span>
+          </div>
+          <div class="result-value" id="requiredProjects">-- <span class="small">件</span></div>
+        </div>
+
+        <div class="result-card">
+          <div class="result-label">
+            時給換算
+            <span class="tooltip-trigger" tabindex="0">?
+              <span class="tooltip-text">必要売上 / 可処分時間 で算出した実質時給です。</span>
+            </span>
+          </div>
+          <div class="result-value" id="hourlyRate">-- <span class="small">円</span></div>
+        </div>
+
+        <div class="result-card">
+          <div class="result-label">
+            年収換算（売上）
+            <span class="tooltip-trigger" tabindex="0">?
+              <span class="tooltip-text">必要月間売上 x 12ヶ月。年間の売上目標です。</span>
+            </span>
+          </div>
+          <div class="result-value" id="annualRevenue">-- <span class="small">万円</span></div>
+        </div>
+
+        <div class="result-card">
+          <div class="result-label">
+            年間手取り額
+            <span class="tooltip-trigger" tabindex="0">?
+              <span class="tooltip-text">月収目標 x 12ヶ月。年間で手元に残る金額です。</span>
+            </span>
+          </div>
+          <div class="result-value" id="annualTakeHome">-- <span class="small">万円</span></div>
+        </div>
+
+        <div class="result-card">
+          <div class="result-label">
+            月間手取り額
+            <span class="tooltip-trigger" tabindex="0">?
+              <span class="tooltip-text">あなたが設定した月収目標額です。税・保険・経費を除いた後の金額。</span>
+            </span>
+          </div>
+          <div class="result-value" id="monthlyTakeHome">-- <span class="small">万円</span></div>
+        </div>
+      </div>
+
+      <!-- グラフ -->
+      <div class="chart-section">
+        <div class="chart-title">売上の内訳</div>
+        <div class="bar-chart" id="barChart"></div>
+        <div class="chart-legend" id="chartLegend"></div>
+      </div>
+
+      <!-- シェア -->
+      <div class="share-section">
+        <button class="share-btn" id="shareTwitter" title="X（Twitter）でシェア">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          この結果をシェア
+        </button>
+        <div class="copy-toast" id="copyToast">リンクをコピーしました</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-links">
+      <a href="https://booth.pm/" target="_blank" rel="noopener" class="footer-card">
+        <div class="footer-card-label">フリーランスの業務効率化に</div>
+        <div class="footer-card-title">Notionテンプレート &rarr;</div>
+      </a>
+      <a href="https://note.com/" target="_blank" rel="noopener" class="footer-card">
+        <div class="footer-card-label">AIで仕事を10倍速くする方法</div>
+        <div class="footer-card-title">Note記事を読む &rarr;</div>
+      </a>
+      <a href="../prompt-generator/" class="footer-card">
+        <div class="footer-card-label">AIプロンプトを簡単作成</div>
+        <div class="footer-card-title">プロンプトジェネレーター &rarr;</div>
+      </a>
+    </div>
+    <div class="footer-copy">&copy; 2026 デジタルクラフト合同会社</div>
+  </div>
+</footer>
+
+<script>
+(function() {
+  'use strict';
+
+  // --- DOM要素 ---
+  const el = {
+    targetIncome: document.getElementById('targetIncome'),
+    targetIncomeNum: document.getElementById('targetIncomeNum'),
+    workDays: document.getElementById('workDays'),
+    workHours: document.getElementById('workHours'),
+    projectPrice: document.getElementById('projectPrice'),
+    projectHours: document.getElementById('projectHours'),
+    fixedCost: document.getElementById('fixedCost'),
+    incomeTaxRate: document.getElementById('incomeTaxRate'),
+    includeInsurance: document.getElementById('includeInsurance'),
+    // 結果
+    availableHours: document.getElementById('availableHours'),
+    maxProjects: document.getElementById('maxProjects'),
+    requiredRevenue: document.getElementById('requiredRevenue'),
+    requiredProjects: document.getElementById('requiredProjects'),
+    hourlyRate: document.getElementById('hourlyRate'),
+    annualRevenue: document.getElementById('annualRevenue'),
+    annualTakeHome: document.getElementById('annualTakeHome'),
+    monthlyTakeHome: document.getElementById('monthlyTakeHome'),
+    barChart: document.getElementById('barChart'),
+    chartLegend: document.getElementById('chartLegend'),
+    warningBox: document.getElementById('warningBox'),
+    shareTwitter: document.getElementById('shareTwitter'),
+    copyToast: document.getElementById('copyToast'),
+  };
+
+  const RESIDENT_TAX_RATE = 0.10;
+  const NATIONAL_PENSION_MONTHLY = 16980; // 円
+  const NHI_RATE = 0.08; // 国保概算
+
+  // --- URLパラメータから状態復元 ---
+  function loadFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    const mapping = {
+      ti: 'targetIncome',
+      wd: 'workDays',
+      wh: 'workHours',
+      pp: 'projectPrice',
+      ph: 'projectHours',
+      fc: 'fixedCost',
+      tr: 'incomeTaxRate',
+      ins: 'includeInsurance',
+    };
+    for (const [key, elId] of Object.entries(mapping)) {
+      const val = params.get(key);
+      if (val === null) continue;
+      const target = el[elId];
+      if (!target) continue;
+      if (target.type === 'checkbox') {
+        target.checked = val === '1';
+      } else {
+        target.value = val;
+      }
+    }
+    if (params.has('ti')) {
+      el.targetIncomeNum.value = el.targetIncome.value;
+    }
+  }
+
+  function buildURL() {
+    const params = new URLSearchParams();
+    params.set('ti', el.targetIncome.value);
+    params.set('wd', el.workDays.value);
+    params.set('wh', el.workHours.value);
+    params.set('pp', el.projectPrice.value);
+    params.set('ph', el.projectHours.value);
+    params.set('fc', el.fixedCost.value);
+    params.set('tr', el.incomeTaxRate.value);
+    params.set('ins', el.includeInsurance.checked ? '1' : '0');
+    return window.location.origin + window.location.pathname + '?' + params.toString();
+  }
+
+  // --- 計算 ---
+  function calculate() {
+    const targetIncome = parseFloat(el.targetIncome.value) || 0; // 万円
+    const workDays = parseInt(el.workDays.value) || 20;
+    const workHoursPerDay = parseInt(el.workHours.value) || 8;
+    const projectPrice = parseFloat(el.projectPrice.value) || 1; // 万円
+    const projectHoursVal = parseFloat(el.projectHours.value) || 1;
+    const fixedCost = parseFloat(el.fixedCost.value) || 0; // 万円
+    const incomeTaxRate = parseFloat(el.incomeTaxRate.value) || 0.1;
+    const includeInsurance = el.includeInsurance.checked;
+
+    // 可処分時間
+    const availableHours = workDays * workHoursPerDay;
+
+    // 最大案件数
+    const maxProjects = Math.floor(availableHours / projectHoursVal);
+
+    // 手取り目標から必要売上を逆算
+    // 売上 = 手取り + 経費 + 税金 + 保険
+    // 所得 = 売上 - 経費
+    // 税金 = 所得 x (所得税率 + 住民税率)
+    // 保険 = 所得 x NHI率 + 年金月額 (保険有効時)
+    // 手取り = 所得 - 税金 - 保険
+    // 手取り = (売上 - 経費) - (売上 - 経費)(税率合計) - 保険
+    // 手取り = (売上 - 経費)(1 - 税率合計) - 保険
+    // 売上 - 経費 = (手取り + 保険) / (1 - 税率合計)
+    // 売上 = (手取り + 保険) / (1 - 税率合計) + 経費
+
+    const totalTaxRate = incomeTaxRate + RESIDENT_TAX_RATE;
+
+    // 保険料の計算（概算）- 所得ベースなので反復計算
+    // まず保険なしで所得を概算し、そこから保険料を算出
+    let insuranceCostManyen = 0;
+    if (includeInsurance) {
+      // 初期推定: 手取りを所得の近似として使う
+      const estimatedIncomeManyen = targetIncome / (1 - totalTaxRate);
+      const nhiMonthly = estimatedIncomeManyen * 10000 * NHI_RATE; // 円
+      const pensionMonthly = NATIONAL_PENSION_MONTHLY; // 円
+      insuranceCostManyen = (nhiMonthly + pensionMonthly) / 10000; // 万円に変換
+    }
+
+    const incomeBeforeTax = (targetIncome + insuranceCostManyen) / (1 - totalTaxRate); // 所得（万円）
+    const requiredRevenue = incomeBeforeTax + fixedCost; // 売上（万円）
+
+    // 再計算: 保険料を正確に
+    if (includeInsurance) {
+      const nhiMonthly = incomeBeforeTax * 10000 * NHI_RATE;
+      const pensionMonthly = NATIONAL_PENSION_MONTHLY;
+      insuranceCostManyen = (nhiMonthly + pensionMonthly) / 10000;
+    }
+
+    // 最終逆算
+    const finalIncome = (targetIncome + insuranceCostManyen) / (1 - totalTaxRate);
+    const finalRevenue = finalIncome + fixedCost;
+
+    // 各内訳
+    const taxAmount = finalIncome * totalTaxRate;
+    const expenseAmount = fixedCost;
+
+    // 必要案件数
+    const requiredProjectsNum = Math.ceil(finalRevenue / projectPrice);
+
+    // 時給換算
+    const hourlyRateYen = Math.round((finalRevenue * 10000) / availableHours);
+
+    // 年収
+    const annualRevenueVal = finalRevenue * 12;
+    const annualTakeHomeVal = targetIncome * 12;
+
+    // 警告チェック
+    let warnings = [];
+    if (requiredProjectsNum > maxProjects) {
+      warnings.push('必要案件数が月間最大案件数を超えています。単価を上げるか稼働時間を増やすことを検討してください。');
+    }
+    if (hourlyRateYen > 20000) {
+      warnings.push('時給換算が2万円を超えています。高単価案件の獲得が必要です。');
+    }
+
+    // --- 表示更新 ---
+    el.availableHours.innerHTML = availableHours + ' <span class="small">時間</span>';
+    el.maxProjects.innerHTML = maxProjects + ' <span class="small">件</span>';
+    el.requiredRevenue.innerHTML = finalRevenue.toFixed(1) + ' <span class="small">万円</span>';
+    el.requiredProjects.innerHTML = requiredProjectsNum + ' <span class="small">件</span>';
+    el.hourlyRate.innerHTML = hourlyRateYen.toLocaleString() + ' <span class="small">円</span>';
+    el.annualRevenue.innerHTML = annualRevenueVal.toFixed(0) + ' <span class="small">万円</span>';
+    el.annualTakeHome.innerHTML = annualTakeHomeVal.toFixed(0) + ' <span class="small">万円</span>';
+    el.monthlyTakeHome.innerHTML = targetIncome.toFixed(0) + ' <span class="small">万円</span>';
+
+    // 警告
+    if (warnings.length > 0) {
+      el.warningBox.textContent = warnings.join(' ');
+      el.warningBox.classList.add('show');
+    } else {
+      el.warningBox.classList.remove('show');
+    }
+
+    // --- グラフ ---
+    const total = finalRevenue;
+    if (total > 0) {
+      const takeHomePct = (targetIncome / total) * 100;
+      const taxPct = (taxAmount / total) * 100;
+      const insurancePct = (insuranceCostManyen / total) * 100;
+      const expensePct = (expenseAmount / total) * 100;
+
+      const segments = [
+        { cls: 'take-home', pct: takeHomePct, label: '手取り', amount: targetIncome },
+        { cls: 'tax', pct: taxPct, label: '税金', amount: taxAmount },
+        { cls: 'insurance', pct: insurancePct, label: '保険・年金', amount: insuranceCostManyen },
+        { cls: 'expense', pct: expensePct, label: '経費', amount: expenseAmount },
+      ];
+
+      el.barChart.innerHTML = segments
+        .filter(s => s.pct > 0)
+        .map(s => {
+          const label = s.pct > 12 ? Math.round(s.pct) + '%' : '';
+          return '<div class="bar-segment ' + s.cls + '" style="width:' + s.pct.toFixed(2) + '%">' + label + '</div>';
+        })
+        .join('');
+
+      el.chartLegend.innerHTML = segments
+        .filter(s => s.amount > 0)
+        .map(s => '<div class="legend-item"><span class="legend-dot ' + s.cls + '"></span>' + s.label + ' ' + s.amount.toFixed(1) + '万円（' + Math.round(s.pct) + '%）</div>')
+        .join('');
+    }
+
+    return { targetIncome, finalRevenue, requiredProjectsNum, hourlyRateYen };
+  }
+
+  // --- スライダー同期 ---
+  el.targetIncome.addEventListener('input', function() {
+    el.targetIncomeNum.value = this.value;
+    calculate();
+  });
+
+  el.targetIncomeNum.addEventListener('input', function() {
+    let v = parseInt(this.value);
+    if (v < 10) v = 10;
+    if (v > 100) v = 100;
+    el.targetIncome.value = v;
+    calculate();
+  });
+
+  // --- 全入力のリアルタイム更新 ---
+  const inputs = [
+    el.workDays, el.workHours, el.projectPrice, el.projectHours,
+    el.fixedCost, el.incomeTaxRate, el.includeInsurance,
+  ];
+
+  inputs.forEach(function(input) {
+    input.addEventListener('input', calculate);
+    input.addEventListener('change', calculate);
+  });
+
+  // --- シェアボタン ---
+  el.shareTwitter.addEventListener('click', function() {
+    const result = calculate();
+    const url = buildURL();
+    const text = 'フリーランス収支シミュレーション結果\n'
+      + '月収目標（手取り）: ' + result.targetIncome + '万円\n'
+      + '必要売上: ' + result.finalRevenue.toFixed(1) + '万円/月\n'
+      + '必要案件数: ' + result.requiredProjectsNum + '件/月\n'
+      + '時給換算: ' + result.hourlyRateYen.toLocaleString() + '円\n';
+
+    const twitterUrl = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(url);
+
+    // URLをクリップボードにもコピー
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(function() {
+        showToast();
+      });
+    }
+
+    window.open(twitterUrl, '_blank', 'noopener,width=550,height=420');
+  });
+
+  function showToast() {
+    el.copyToast.classList.remove('show');
+    // Force reflow
+    void el.copyToast.offsetWidth;
+    el.copyToast.classList.add('show');
+    setTimeout(function() {
+      el.copyToast.classList.remove('show');
+    }, 2200);
+  }
+
+  // --- 初期化 ---
+  loadFromURL();
+  // スライダー同期
+  el.targetIncomeNum.value = el.targetIncome.value;
+  calculate();
+
+})();
+</script>
+
+</body>
+</html>

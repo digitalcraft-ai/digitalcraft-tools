@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChatGPTプロンプトジェネレーター | デジタルクラフト合同会社</title>
+<meta name="description" content="目的・トーン・詳細を選ぶだけで、すぐに使えるChatGPTプロンプトを自動生成。APIキー不要の無料ツールです。">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#2563EB;--primary-hover:#1d4ed8;--primary-light:#dbeafe;
+  --bg:#f8fafc;--bg-card:#fff;--bg-code:#f1f5f9;
+  --text:#0f172a;--text-muted:#64748b;--text-light:#94a3b8;
+  --border:#e2e8f0;--radius:12px;--shadow:0 1px 3px rgba(0,0,0,.08);
+  --shadow-lg:0 10px 25px rgba(0,0,0,.08);
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif;
+}
+.dark{
+  --bg:#0f172a;--bg-card:#1e293b;--bg-code:#0f172a;
+  --text:#e2e8f0;--text-muted:#94a3b8;--text-light:#64748b;
+  --border:#334155;--primary-light:#1e3a5f;
+  --shadow:0 1px 3px rgba(0,0,0,.3);--shadow-lg:0 10px 25px rgba(0,0,0,.3);
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.7;transition:background .3s,color .3s}
+
+/* Header */
+.header{background:var(--primary);color:#fff;padding:0;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(37,99,235,.3)}
+.header-inner{max-width:800px;margin:0 auto;padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
+.header h1{font-size:1.2rem;font-weight:700;letter-spacing:-.02em}
+.header h1 span{font-size:.8rem;font-weight:400;opacity:.85;display:block}
+.theme-toggle{background:rgba(255,255,255,.15);border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;transition:background .2s}
+.theme-toggle:hover{background:rgba(255,255,255,.25)}
+
+/* Main */
+.container{max-width:800px;margin:0 auto;padding:32px 24px 48px}
+
+/* Card */
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:28px;margin-bottom:24px;box-shadow:var(--shadow);transition:background .3s,border-color .3s}
+.card-title{font-size:1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.card-title .num{background:var(--primary);color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0}
+
+/* Form */
+label{display:block;font-size:.875rem;font-weight:600;margin-bottom:6px;color:var(--text)}
+select,textarea,input[type="text"]{
+  width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;
+  font-size:.95rem;font-family:var(--font);background:var(--bg);color:var(--text);
+  transition:border-color .2s,box-shadow .2s;appearance:none;
+}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='%2364748b'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+select:focus,textarea:focus,input[type="text"]:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.15)}
+textarea{min-height:100px;resize:vertical}
+
+.radio-group{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.radio-group label{
+  display:flex;align-items:center;gap:6px;padding:8px 16px;
+  border:1px solid var(--border);border-radius:8px;cursor:pointer;
+  font-weight:500;font-size:.9rem;transition:all .2s;user-select:none;
+}
+.radio-group label:has(input:checked){border-color:var(--primary);background:var(--primary-light);color:var(--primary)}
+.radio-group input[type="radio"]{accent-color:var(--primary);margin:0}
+
+.custom-input{margin-top:10px;display:none}
+.custom-input.visible{display:block}
+
+/* Buttons */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:12px 28px;border:none;border-radius:8px;font-size:1rem;
+  font-weight:600;cursor:pointer;transition:all .2s;font-family:var(--font);
+}
+.btn-primary{background:var(--primary);color:#fff;width:100%;font-size:1.05rem;padding:14px}
+.btn-primary:hover{background:var(--primary-hover);transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,.3)}
+.btn-primary:active{transform:translateY(0)}
+.btn-secondary{background:var(--bg);color:var(--text);border:1px solid var(--border);padding:10px 20px;font-size:.9rem}
+.btn-secondary:hover{border-color:var(--primary);color:var(--primary)}
+.btn-copy{background:#10b981;color:#fff;padding:10px 20px;font-size:.9rem}
+.btn-copy:hover{background:#059669}
+.btn-copy.copied{background:#6b7280}
+
+/* Result */
+.result-area{display:none;animation:fadeIn .4s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.result-header h3{font-size:1rem;font-weight:700}
+.result-actions{display:flex;gap:8px}
+.result-block{
+  background:var(--bg-code);border:1px solid var(--border);border-radius:8px;
+  padding:20px;font-size:.9rem;line-height:1.8;white-space:pre-wrap;
+  word-wrap:break-word;font-family:"SFMono-Regular",Consolas,"Noto Sans JP",monospace;
+  max-height:400px;overflow-y:auto;
+}
+.result-meta{margin-top:12px;font-size:.8rem;color:var(--text-muted);text-align:right}
+
+/* Tip */
+.tip{background:var(--primary-light);border-left:4px solid var(--primary);padding:14px 18px;border-radius:0 8px 8px 0;margin-top:20px;font-size:.85rem;color:var(--text)}
+.tip strong{color:var(--primary)}
+
+/* Footer */
+.footer{background:var(--bg-card);border-top:1px solid var(--border);padding:40px 24px;margin-top:48px;transition:background .3s,border-color .3s}
+.footer-inner{max-width:800px;margin:0 auto}
+.footer-cta{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:32px}
+.footer-cta a{
+  display:block;padding:20px;border:1px solid var(--border);border-radius:var(--radius);
+  text-decoration:none;color:var(--text);transition:all .2s;
+}
+.footer-cta a:hover{border-color:var(--primary);transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.footer-cta a .cta-label{font-size:.8rem;color:var(--primary);font-weight:600;margin-bottom:4px}
+.footer-cta a .cta-title{font-size:.95rem;font-weight:700}
+.footer-cta a .cta-desc{font-size:.8rem;color:var(--text-muted);margin-top:4px}
+.footer-copy{text-align:center;font-size:.8rem;color:var(--text-light)}
+
+/* Responsive */
+@media(max-width:600px){
+  .header-inner{padding:12px 16px}
+  .header h1{font-size:1rem}
+  .container{padding:20px 16px 32px}
+  .card{padding:20px}
+  .radio-group{gap:6px}
+  .radio-group label{padding:7px 12px;font-size:.85rem}
+  .result-actions{width:100%}
+  .result-actions .btn{flex:1}
+  .footer-cta{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <h1>ChatGPTプロンプトジェネレーター<span>デジタルクラフト合同会社</span></h1>
+    <button class="theme-toggle" id="themeToggle" aria-label="テーマ切替" title="ダークモード切替">🌙</button>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- Step 1 -->
+  <div class="card">
+    <div class="card-title"><span class="num">1</span>目的を選択</div>
+    <label for="purpose">プロンプトの目的</label>
+    <select id="purpose">
+      <option value="">-- 選択してください --</option>
+      <option value="business_email">ビジネスメール作成</option>
+      <option value="blog">ブログ記事作成</option>
+      <option value="sns">SNS投稿文作成</option>
+      <option value="proposal">企画書・提案書作成</option>
+      <option value="minutes">議事録の要約</option>
+      <option value="catchcopy">キャッチコピー作成</option>
+      <option value="programming">プログラミング補助</option>
+      <option value="translation">翻訳・校正</option>
+      <option value="learning">学習サポート</option>
+      <option value="custom">カスタム（自由入力）</option>
+    </select>
+    <div class="custom-input" id="customPurposeWrap">
+      <label for="customPurpose" style="margin-top:12px">カスタム目的を入力</label>
+      <input type="text" id="customPurpose" placeholder="例：レシピ考案、自己PR作成 など">
+    </div>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="card">
+    <div class="card-title"><span class="num">2</span>トーンを選択</div>
+    <div class="radio-group">
+      <label><input type="radio" name="tone" value="フォーマル" checked>フォーマル</label>
+      <label><input type="radio" name="tone" value="カジュアル">カジュアル</label>
+      <label><input type="radio" name="tone" value="親しみやすい">親しみやすい</label>
+      <label><input type="radio" name="tone" value="専門的">専門的</label>
+    </div>
+  </div>
+
+  <!-- Step 3 -->
+  <div class="card">
+    <div class="card-title"><span class="num">3</span>詳細を入力</div>
+    <label for="details">具体的な要件</label>
+    <textarea id="details" placeholder="例：納期延長のお願いメール、取引先の部長宛、丁寧な表現で"></textarea>
+  </div>
+
+  <!-- Step 4 -->
+  <div class="card">
+    <div class="card-title"><span class="num">4</span>出力言語</div>
+    <label for="lang">生成されるプロンプトの言語</label>
+    <select id="lang">
+      <option value="日本語">日本語</option>
+      <option value="English">English</option>
+    </select>
+  </div>
+
+  <!-- Generate -->
+  <button class="btn btn-primary" id="generateBtn">プロンプトを生成</button>
+
+  <!-- Result -->
+  <div class="result-area" id="resultArea">
+    <div class="card" style="margin-top:24px;border-color:var(--primary);border-width:2px">
+      <div class="result-header">
+        <h3>生成されたプロンプト</h3>
+        <div class="result-actions">
+          <button class="btn btn-copy" id="copyBtn">コピー</button>
+          <button class="btn btn-secondary" id="regenerateBtn">もう一度生成</button>
+        </div>
+      </div>
+      <div class="result-block" id="resultBlock"></div>
+      <div class="result-meta" id="resultMeta"></div>
+    </div>
+    <div class="tip">
+      <strong>Tip:</strong> 生成されたプロンプトをChatGPTに貼り付けてお使いください。「もう一度生成」で別パターンも試せます。
+    </div>
+  </div>
+
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-cta">
+      <a href="https://note.com/digitalcraft/" target="_blank" rel="noopener">
+        <div class="cta-label">もっとプロンプトが欲しい方へ</div>
+        <div class="cta-title">プロンプト100選（Note）</div>
+        <div class="cta-desc">業務で即使える厳選プロンプト集を公開中</div>
+      </a>
+      <a href="https://digitalcraft.booth.pm/" target="_blank" rel="noopener">
+        <div class="cta-label">業務効率化テンプレート</div>
+        <div class="cta-title">BOOTHショップ</div>
+        <div class="cta-desc">Excel・Notion テンプレートを販売中</div>
+      </a>
+      <a href="../income-simulator/">
+        <div class="cta-label">他の無料ツール</div>
+        <div class="cta-title">収支シミュレーター</div>
+        <div class="cta-desc">フリーランスの月収を簡単シミュレーション</div>
+      </a>
+    </div>
+    <div class="footer-copy">&copy; 2026 デジタルクラフト合同会社</div>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* ===== Dark Mode ===== */
+const toggle = document.getElementById("themeToggle");
+const prefersDark = window.matchMedia("(prefers-color-scheme:dark)").matches;
+let dark = localStorage.getItem("theme") === "dark" || (localStorage.getItem("theme") === null && prefersDark);
+function applyTheme(){
+  document.body.classList.toggle("dark", dark);
+  toggle.textContent = dark ? "☀️" : "🌙";
+}
+applyTheme();
+toggle.addEventListener("click", function(){
+  dark = !dark;
+  localStorage.setItem("theme", dark ? "dark" : "light");
+  applyTheme();
+});
+
+/* ===== Custom purpose toggle ===== */
+const purposeEl = document.getElementById("purpose");
+const customWrap = document.getElementById("customPurposeWrap");
+purposeEl.addEventListener("change", function(){
+  customWrap.classList.toggle("visible", this.value === "custom");
+});
+
+/* ===== Templates ===== */
+const T = {};
+
+T.business_email = [
+  function(d,t,l){return `あなたはビジネスコミュニケーションの専門家です。以下の要件で${t}なビジネスメールを作成してください。
+
+【要件】${d}
+【トーン】${t}
+【言語】${l}
+
+以下の形式で出力してください：
+- 件名
+- 本文（200〜300字）
+- 追伸（必要な場合）`;},
+  function(d,t,l){return `あなたは${l}のビジネスメールに精通したプロのライターです。
+
+# タスク
+${d}に関するビジネスメールを${t}なトーンで作成してください。
+
+# 出力形式
+1. 件名（簡潔かつ内容が伝わるもの）
+2. 宛名
+3. 本文（起承転結を意識、200〜400字）
+4. 署名テンプレート
+
+# 注意点
+- ${t}な表現を維持すること
+- 相手に失礼のない文面にすること`;},
+  function(d,t,l){return `Role: あなたはビジネスメールの達人です。
+Task: 以下の情報をもとにメールを作成してください。
+
+---
+目的: ${d}
+文体: ${t}
+出力言語: ${l}
+---
+
+以下の3パターンを提案してください：
+A) 簡潔版（100字以内）
+B) 標準版（200〜300字）
+C) 丁寧版（400字程度）
+
+それぞれ件名も添えてください。`;},
+  function(d,t,l){return `あなたはビジネスマナーに詳しい秘書AIです。
+
+次の要件でビジネスメールの下書きを作ってください。
+- 内容: ${d}
+- トーン: ${t}
+- 言語: ${l}
+
+出力には以下を含めてください：
+・件名
+・本文
+・送信前のチェックポイント3つ`;}
+];
+
+T.blog = [
+  function(d,t,l){return `あなたはSEOに強いプロのブログライターです。以下のテーマで${t}なトーンのブログ記事を作成してください。
+
+【テーマ】${d}
+【トーン】${t}
+【言語】${l}
+
+以下の構成で出力してください：
+1. タイトル（SEOを意識、32文字以内）
+2. リード文（100〜150字）
+3. 見出し構成（H2×3〜5、H3を適宜）
+4. 本文（2000〜3000字）
+5. まとめ
+6. メタディスクリプション（120字以内）`;},
+  function(d,t,l){return `Role: SEO特化のコンテンツストラテジスト
+Language: ${l}
+
+# 依頼
+「${d}」というテーマで、${t}なトーンのブログ記事を書いてください。
+
+# 条件
+- 読者のペルソナ: このテーマに興味がある初〜中級者
+- 文字数: 2000〜3000字
+- 見出し: H2を3〜5個
+- 冒頭で読者の悩みに共感する
+
+# 出力
+記事タイトル → リード → 本文 → まとめ → CTA文`;},
+  function(d,t,l){return `あなたは読者を引き込む文章を書くプロライターです。
+
+テーマ: ${d}
+スタイル: ${t}
+言語: ${l}
+
+以下のステップで記事を作成してください：
+Step 1: 魅力的なタイトルを5つ提案
+Step 2: 最適なタイトルを選び、記事構成を作成
+Step 3: 各セクションの本文を執筆
+Step 4: まとめとCTAを追加
+
+読者が最後まで読みたくなる工夫を随所に入れてください。`;},
+  function(d,t,l){return `あなたはバズるブログ記事を量産できるAIライターです。
+
+次の条件でブログ記事を書いてください：
+- トピック: ${d}
+- 文体: ${t}
+- 出力言語: ${l}
+- 想定読者: 20〜40代のビジネスパーソン
+- 目標: 検索上位表示＆SNSシェアされる内容
+
+出力形式:
+1. SEOタイトル（パワーワードを含む）
+2. アイキャッチ画像の説明
+3. 記事本文（見出し付き）
+4. 関連キーワード5つ`;}
+];
+
+T.sns = [
+  function(d,t,l){return `あなたはSNSマーケティングの専門家です。以下の内容で${t}なSNS投稿文を作成してください。
+
+【内容】${d}
+【トーン】${t}
+【言語】${l}
+
+以下のSNSごとに最適化した投稿を作成してください：
+1. X（Twitter）: 140字以内、ハッシュタグ3つ
+2. Instagram: キャプション＋ハッシュタグ10個
+3. LinkedIn: ビジネス向け投稿、300字程度`;},
+  function(d,t,l){return `Role: バズるSNS投稿を作るコピーライター
+Tone: ${t}
+Language: ${l}
+
+以下のテーマでSNS投稿文を5パターン作ってください。
+
+テーマ: ${d}
+
+各パターンの特徴:
+1. 共感を呼ぶ系
+2. 問いかけ系
+3. 数字・データ活用系
+4. ストーリー系
+5. インパクト重視系
+
+それぞれ140字以内で、適切なハッシュタグを3つ付けてください。`;},
+  function(d,t,l){return `あなたはフォロワー10万人のインフルエンサーのゴーストライターです。
+
+テーマ「${d}」で${t}なトーンのSNS投稿を作成してください。
+言語: ${l}
+
+出力:
+- キャッチーな1行目（スクロールを止める）
+- 本文（価値提供 or 共感）
+- CTA（行動を促す一文）
+- ハッシュタグ候補5つ
+- 投稿に最適な時間帯の提案`;}
+];
+
+T.proposal = [
+  function(d,t,l){return `あなたは経営コンサルタントです。以下の内容で${t}なトーンの企画書を作成してください。
+
+【企画内容】${d}
+【トーン】${t}
+【言語】${l}
+
+以下の構成で出力してください：
+1. 企画タイトル
+2. 背景・課題
+3. 目的・ゴール
+4. 施策内容（具体的に3〜5項目）
+5. スケジュール案
+6. 予算概算
+7. 期待される効果
+8. リスクと対策`;},
+  function(d,t,l){return `あなたは大手企業で数多くの企画を通してきたベテランプランナーです。
+
+# 依頼
+「${d}」に関する提案書を${t}な文体で作成してください。
+言語: ${l}
+
+# 構成
+- エグゼクティブサマリー（3行）
+- 現状分析
+- 提案内容
+- 実行計画（フェーズ分け）
+- KPI設定
+- 投資対効果
+
+説得力のある数字やロジックを盛り込んでください。`;},
+  function(d,t,l){return `Role: 戦略コンサルタント
+Tone: ${t}
+Language: ${l}
+
+次のテーマで企画書のドラフトを作成してください。
+
+テーマ: ${d}
+
+出力形式:
+1. ワンページサマリー
+2. SWOT分析
+3. 具体的な施策（3つ以上）
+4. ロードマップ（3ヶ月・6ヶ月・1年）
+5. 成功指標と評価方法`;}
+];
+
+T.minutes = [
+  function(d,t,l){return `あなたは議事録作成のプロフェッショナルです。以下の会議内容を${t}なトーンで要約してください。
+
+【会議内容】${d}
+【トーン】${t}
+【言語】${l}
+
+以下の形式で出力してください：
+1. 会議概要（1〜2文）
+2. 主要な議題と決定事項（箇条書き）
+3. アクションアイテム（担当者・期限を含む）
+4. 次回までの宿題
+5. 次回会議の予定`;},
+  function(d,t,l){return `あなたは正確で簡潔な議事録を作成するAIアシスタントです。
+
+以下の内容を整理して議事録にまとめてください。
+
+内容: ${d}
+文体: ${t}
+言語: ${l}
+
+出力形式:
+- 日時・参加者（わかる範囲で）
+- アジェンダ
+- 各議題の要約（結論→議論のポイント）
+- To Do リスト（Who / What / When）
+- 備考・補足`;},
+  function(d,t,l){return `Role: 議事録エキスパート
+Input: ${d}
+Style: ${t}
+Language: ${l}
+
+この会議メモを以下の3つの粒度で要約してください:
+
+1. 【30秒版】3行サマリー
+2. 【3分版】主要決定事項とアクションアイテム
+3. 【詳細版】議題ごとの議論まとめ
+
+重要度の高い決定事項には★マークを付けてください。`;}
+];
+
+T.catchcopy = [
+  function(d,t,l){return `あなたは受賞歴のあるコピーライターです。以下の商品・サービスのキャッチコピーを作成してください。
+
+【対象】${d}
+【トーン】${t}
+【言語】${l}
+
+以下を出力してください：
+1. メインキャッチコピー（5案）
+2. サブコピー（各メインに対応、20〜30字）
+3. タグライン（ブランドを一言で表す）
+4. 各案の狙い・意図の説明`;},
+  function(d,t,l){return `あなたは言葉の魔術師です。一言で人の心を掴むコピーを考えてください。
+
+対象: ${d}
+テイスト: ${t}
+言語: ${l}
+
+以下のアプローチでそれぞれ2案ずつ提案してください：
+A) ベネフィット訴求（得られる価値を強調）
+B) 課題訴求（悩みに寄り添う）
+C) 好奇心喚起（思わず読みたくなる）
+D) 数字活用（具体性で信頼感）
+
+合計8案、それぞれ15字以内で。`;},
+  function(d,t,l){return `Role: 大手広告代理店のシニアコピーライター
+Tone: ${t}
+Language: ${l}
+
+「${d}」のキャッチコピーを作成してください。
+
+条件:
+- 10案以上提案
+- 韻を踏むもの、対比を使うもの、比喩を使うものなど多様なテクニックを活用
+- 各コピーに使用したテクニックを明記
+- 最もおすすめの1案とその理由を最後に記載`;}
+];
+
+T.programming = [
+  function(d,t,l){return `あなたは10年以上の経験を持つシニアソフトウェアエンジニアです。以下のプログラミングタスクを手伝ってください。
+
+【タスク】${d}
+【説明スタイル】${t}
+【言語】${l}
+
+以下の形式で回答してください：
+1. 要件の整理
+2. 設計方針
+3. コード（コメント付き）
+4. 使い方の説明
+5. 注意点・改善提案`;},
+  function(d,t,l){return `あなたはコードレビューも得意なフルスタックエンジニアです。
+
+タスク: ${d}
+説明レベル: ${t}
+回答言語: ${l}
+
+以下のステップで回答してください:
+Step 1: 問題の分析
+Step 2: 複数のアプローチを提示（メリット・デメリット比較）
+Step 3: 推奨アプローチのコード実装
+Step 4: テストコード
+Step 5: パフォーマンスに関する考慮事項`;},
+  function(d,t,l){return `Role: テックリード / メンター
+Style: ${t}
+Language: ${l}
+
+# リクエスト
+${d}
+
+# 出力してほしいもの
+- 動作するコード（ベストプラクティスに従う）
+- 各処理の解説コメント
+- エラーハンドリングの実装
+- 使用例（サンプルデータ付き）
+- 関連する発展的なトピックの紹介`;}
+];
+
+T.translation = [
+  function(d,t,l){return `あなたはプロの翻訳者・校正者です。以下の内容を翻訳・校正してください。
+
+【内容】${d}
+【トーン】${t}
+【出力言語】${l}
+
+以下の形式で出力してください：
+1. 翻訳/校正結果
+2. 変更箇所のハイライト（原文→修正後）
+3. 翻訳・校正の意図の説明
+4. 代替表現の提案（3つ）
+5. 文化的な注意点（該当する場合）`;},
+  function(d,t,l){return `あなたはネイティブレベルの多言語翻訳者です。
+
+原文: ${d}
+スタイル: ${t}
+出力言語: ${l}
+
+以下を提供してください:
+A) 直訳版: 原文に忠実な翻訳
+B) 意訳版: 自然で読みやすい翻訳
+C) クリエイティブ版: ターゲット言語の文化に最適化
+
+各バージョンの違いと、使い分けのアドバイスも添えてください。`;},
+  function(d,t,l){return `Role: 翻訳・校正のエキスパート（${l}専門）
+Tone: ${t}
+
+以下のテキストを校正・改善してください。
+
+---
+${d}
+---
+
+出力:
+1. 校正済みテキスト
+2. 修正一覧（誤字脱字・文法・表現の改善）
+3. 文章の読みやすさスコア（10点満点）
+4. さらに良くするための提案3つ`;}
+];
+
+T.learning = [
+  function(d,t,l){return `あなたは優秀な家庭教師です。以下のトピックについて${t}なスタイルで教えてください。
+
+【学習テーマ】${d}
+【教え方のスタイル】${t}
+【言語】${l}
+
+以下の構成で説明してください：
+1. 概要（一言で説明）
+2. なぜ重要か
+3. 基本概念の説明（具体例付き）
+4. よくある間違い・注意点
+5. 理解度チェッククイズ（3問）
+6. 次に学ぶべきトピック`;},
+  function(d,t,l){return `あなたは複雑な概念をわかりやすく教える天才講師です。
+
+トピック: ${d}
+レベル: ${t}
+言語: ${l}
+
+以下の方法で段階的に教えてください:
+Level 1: 5歳にもわかるように（たとえ話）
+Level 2: 高校生向けの説明
+Level 3: 専門家向けの詳細解説
+
+各レベルの最後に、理解を確認する質問を1つ付けてください。`;},
+  function(d,t,l){return `Role: AI学習アドバイザー
+Topic: ${d}
+Style: ${t}
+Language: ${l}
+
+このトピックの学習ロードマップを作成してください:
+
+1. 前提知識の確認
+2. 学習ステップ（5段階）
+   - 各ステップの目標
+   - おすすめリソース
+   - 実践課題
+3. 学習期間の目安
+4. つまずきやすいポイントと対策
+5. 応用・発展テーマ`;}
+];
+
+T.custom = [
+  function(d,t,l){return `あなたはあらゆる分野に精通したAIアシスタントです。以下の要件に対して最適な回答を作成してください。
+
+【要件】${d}
+【トーン】${t}
+【言語】${l}
+
+以下の点を意識して回答してください：
+- 具体的かつ実用的な内容
+- 構造化された出力（見出し・箇条書きを活用）
+- 必要に応じて例やサンプルを含める`;},
+  function(d,t,l){return `あなたはユーザーの要望を正確に理解し、期待以上の成果を出すAIです。
+
+リクエスト: ${d}
+スタイル: ${t}
+出力言語: ${l}
+
+以下のステップで対応してください:
+1. リクエストの要約・確認
+2. アプローチの提示
+3. 本題の回答（詳細かつ構造化）
+4. 追加のアドバイス・提案`;},
+  function(d,t,l){return `Role: 万能AIコンサルタント
+Request: ${d}
+Tone: ${t}
+Language: ${l}
+
+上記のリクエストに対して、プロフェッショナルな回答を提供してください。
+
+出力の条件:
+- 実行可能で具体的なアドバイス
+- メリット・デメリットの提示（該当する場合）
+- 次のアクションの提案
+- 参考になる観点や考え方の紹介`;}
+];
+
+/* ===== English wrapper ===== */
+const engPrefix = {
+  business_email: "You are an expert in business communication.",
+  blog: "You are a professional blog writer with strong SEO skills.",
+  sns: "You are a social media marketing expert.",
+  proposal: "You are an experienced business consultant.",
+  minutes: "You are a professional meeting-minutes summarizer.",
+  catchcopy: "You are an award-winning copywriter.",
+  programming: "You are a senior software engineer with 10+ years of experience.",
+  translation: "You are a professional translator and proofreader.",
+  learning: "You are an excellent tutor who explains things clearly.",
+  custom: "You are a versatile AI assistant skilled in many domains."
+};
+
+function toEnglishPrompt(purpose, details, tone, lang){
+  const toneMap = {"フォーマル":"formal","カジュアル":"casual","親しみやすい":"friendly","専門的":"professional"};
+  const eTone = toneMap[tone] || tone;
+  const templates = T[purpose] || T.custom;
+  const idx = Math.floor(Math.random() * templates.length);
+  /* Build English version based on same structure */
+  const p = engPrefix[purpose] || engPrefix.custom;
+  const variants = [
+    `${p} Please help with the following task in a ${eTone} tone.
+
+[Task] ${details}
+[Tone] ${eTone}
+[Language] ${lang}
+
+Provide a well-structured, detailed response. Use headings, bullet points, and examples where appropriate.`,
+    `${p}
+
+# Request
+${details}
+
+# Requirements
+- Tone: ${eTone}
+- Language: ${lang}
+- Be specific, practical, and actionable
+- Include examples or templates where helpful
+
+Please provide your response in a clear, organized format.`,
+    `${p}
+
+Task: ${details}
+Style: ${eTone}
+Output language: ${lang}
+
+Step 1: Analyze the request
+Step 2: Provide your best solution
+Step 3: Suggest improvements or alternatives
+Step 4: List any caveats or considerations`
+  ];
+  return { text: variants[idx % variants.length], index: idx };
+}
+
+/* ===== Generation logic ===== */
+let lastIndex = -1;
+
+function generate(){
+  const purpose = purposeEl.value;
+  const customPurpose = document.getElementById("customPurpose").value.trim();
+  const tone = document.querySelector('input[name="tone"]:checked').value;
+  const details = document.getElementById("details").value.trim();
+  const lang = document.getElementById("lang").value;
+
+  if(!purpose){alert("目的を選択してください。");return;}
+  if(!details){alert("詳細を入力してください。");return;}
+  if(purpose === "custom" && !customPurpose){alert("カスタム目的を入力してください。");return;}
+
+  const effectivePurpose = purpose === "custom" ? "custom" : purpose;
+  const effectiveDetails = purpose === "custom" ? `${customPurpose}: ${details}` : details;
+
+  let promptText;
+  let usedIndex;
+
+  if(lang === "English"){
+    const r = toEnglishPrompt(effectivePurpose, effectiveDetails, tone, lang);
+    promptText = r.text;
+    usedIndex = r.index;
+  } else {
+    const templates = T[effectivePurpose] || T.custom;
+    // Pick a different pattern than last time
+    let idx = Math.floor(Math.random() * templates.length);
+    if(templates.length > 1 && idx === lastIndex){
+      idx = (idx + 1) % templates.length;
+    }
+    lastIndex = idx;
+    usedIndex = idx;
+    promptText = templates[idx](effectiveDetails, tone, lang);
+  }
+
+  document.getElementById("resultBlock").textContent = promptText;
+  document.getElementById("resultMeta").textContent =
+    `パターン ${usedIndex + 1} / ${(T[effectivePurpose]||T.custom).length} | ${new Date().toLocaleTimeString("ja-JP")}`;
+
+  const area = document.getElementById("resultArea");
+  area.style.display = "block";
+  // Re-trigger animation
+  area.style.animation = "none";
+  area.offsetHeight;
+  area.style.animation = "";
+  area.scrollIntoView({behavior:"smooth", block:"nearest"});
+
+  // Reset copy button
+  const cb = document.getElementById("copyBtn");
+  cb.textContent = "コピー";
+  cb.classList.remove("copied");
+}
+
+document.getElementById("generateBtn").addEventListener("click", generate);
+document.getElementById("regenerateBtn").addEventListener("click", generate);
+
+/* ===== Copy ===== */
+document.getElementById("copyBtn").addEventListener("click", function(){
+  const text = document.getElementById("resultBlock").textContent;
+  navigator.clipboard.writeText(text).then(function(){
+    const btn = document.getElementById("copyBtn");
+    btn.textContent = "コピー完了!";
+    btn.classList.add("copied");
+    setTimeout(function(){
+      btn.textContent = "コピー";
+      btn.classList.remove("copied");
+    }, 2000);
+  }).catch(function(){
+    // Fallback
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+    const btn = document.getElementById("copyBtn");
+    btn.textContent = "コピー完了!";
+    btn.classList.add("copied");
+    setTimeout(function(){
+      btn.textContent = "コピー";
+      btn.classList.remove("copied");
+    }, 2000);
+  });
+});
+
+})();
+</script>
+</body>
+</html>

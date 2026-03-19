@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OGPチェッカー｜無料OGPプレビュー＆診断ツール｜デジタルクラフト合同会社</title>
+<meta name="description" content="URLのOGP設定を無料でチェック。Twitter Card・Facebook・LINEでのシェア表示をプレビュー。不足タグの警告や推奨設定のチェックリスト付き。">
+<meta property="og:title" content="OGPチェッカー｜無料OGPプレビュー＆診断ツール">
+<meta property="og:description" content="OGP設定を無料でチェック。SNSシェア表示のプレビューと診断が簡単にできます。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://digitalcraft-llc.github.io/tools/ogp-checker/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--primary:#2563EB;--primary-dark:#1d4ed8;--primary-light:#dbeafe;--gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;--gray-300:#d1d5db;--gray-400:#9ca3af;--gray-500:#6b7280;--gray-600:#4b5563;--gray-700:#374151;--gray-800:#1f2937;--gray-900:#111827;--green:#16a34a;--green-light:#dcfce7;--yellow:#ca8a04;--yellow-light:#fef9c3;--red:#dc2626;--red-light:#fee2e2;--radius:8px;--shadow:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06);--shadow-md:0 4px 6px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.06);--shadow-lg:0 10px 15px rgba(0,0,0,.1),0 4px 6px rgba(0,0,0,.05)}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;color:var(--gray-800);background:var(--gray-50);line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--primary);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* Header */
+.header{background:linear-gradient(135deg,var(--primary) 0%,#1e40af 100%);color:#fff;padding:2rem 1rem;text-align:center}
+.header h1{font-size:1.75rem;font-weight:700;margin-bottom:.5rem;letter-spacing:.02em}
+.header p{font-size:.95rem;opacity:.9;max-width:600px;margin:0 auto}
+
+/* Container */
+.container{max-width:960px;margin:0 auto;padding:1.5rem 1rem}
+
+/* Card */
+.card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1.5rem}
+.card h2{font-size:1.15rem;font-weight:700;color:var(--gray-800);margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+.card h2 .icon{font-size:1.25rem}
+
+/* Input Area */
+.input-section textarea{width:100%;min-height:200px;border:2px solid var(--gray-200);border-radius:var(--radius);padding:1rem;font-size:.875rem;font-family:monospace;line-height:1.6;resize:vertical;transition:border-color .2s}
+.input-section textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.15)}
+.input-section textarea::placeholder{color:var(--gray-400)}
+.btn-row{display:flex;gap:.75rem;margin-top:1rem;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.65rem 1.5rem;border-radius:var(--radius);font-size:.9rem;font-weight:600;border:none;cursor:pointer;transition:all .2s}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-dark);box-shadow:var(--shadow-md)}
+.btn-secondary{background:var(--gray-100);color:var(--gray-700);border:1px solid var(--gray-200)}
+.btn-secondary:hover{background:var(--gray-200)}
+.hint{font-size:.8rem;color:var(--gray-500);margin-top:.75rem;line-height:1.6}
+
+/* Results hidden by default */
+#results{display:none}
+
+/* Tabs */
+.tabs{display:flex;border-bottom:2px solid var(--gray-200);margin-bottom:1.5rem;gap:0;overflow-x:auto}
+.tab-btn{padding:.65rem 1.25rem;font-size:.875rem;font-weight:600;color:var(--gray-500);background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;white-space:nowrap;transition:all .2s}
+.tab-btn:hover{color:var(--gray-700)}
+.tab-btn.active{color:var(--primary);border-bottom-color:var(--primary)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* OGP Data Table */
+.ogp-table{width:100%;border-collapse:collapse}
+.ogp-table th,.ogp-table td{text-align:left;padding:.6rem .75rem;border-bottom:1px solid var(--gray-100);font-size:.875rem}
+.ogp-table th{color:var(--gray-500);font-weight:500;width:160px;white-space:nowrap}
+.ogp-table td{color:var(--gray-800);word-break:break-all}
+.ogp-table td.empty{color:var(--gray-400);font-style:italic}
+
+/* Preview Cards */
+.preview-container{max-width:520px}
+
+/* Twitter Card Preview */
+.twitter-preview{border:1px solid var(--gray-200);border-radius:14px;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.twitter-preview .tw-img{width:100%;aspect-ratio:1.91/1;background:var(--gray-100);display:flex;align-items:center;justify-content:center;color:var(--gray-400);font-size:.85rem;overflow:hidden}
+.twitter-preview .tw-img img{width:100%;height:100%;object-fit:cover}
+.twitter-preview .tw-body{padding:.75rem 1rem}
+.twitter-preview .tw-domain{font-size:.8rem;color:var(--gray-500);margin-bottom:.15rem;text-transform:lowercase}
+.twitter-preview .tw-title{font-size:.925rem;font-weight:700;color:var(--gray-900);line-height:1.3;margin-bottom:.2rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.twitter-preview .tw-desc{font-size:.8rem;color:var(--gray-500);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+/* Twitter Summary (small card) */
+.twitter-summary{border:1px solid var(--gray-200);border-radius:14px;overflow:hidden;display:flex;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.twitter-summary .tw-sm-img{width:125px;min-height:125px;background:var(--gray-100);display:flex;align-items:center;justify-content:center;color:var(--gray-400);font-size:.75rem;flex-shrink:0;overflow:hidden}
+.twitter-summary .tw-sm-img img{width:100%;height:100%;object-fit:cover}
+.twitter-summary .tw-sm-body{padding:.75rem 1rem;display:flex;flex-direction:column;justify-content:center;min-width:0}
+.twitter-summary .tw-domain{font-size:.8rem;color:var(--gray-500);margin-bottom:.15rem}
+.twitter-summary .tw-title{font-size:.9rem;font-weight:700;color:var(--gray-900);line-height:1.3;margin-bottom:.15rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.twitter-summary .tw-desc{font-size:.78rem;color:var(--gray-500);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+/* Facebook Preview */
+.fb-preview{border:1px solid var(--gray-200);background:var(--gray-50);font-family:Helvetica,Arial,sans-serif}
+.fb-preview .fb-img{width:100%;aspect-ratio:1.91/1;background:var(--gray-100);display:flex;align-items:center;justify-content:center;color:var(--gray-400);font-size:.85rem;overflow:hidden}
+.fb-preview .fb-img img{width:100%;height:100%;object-fit:cover}
+.fb-preview .fb-body{padding:.65rem .85rem;border-top:1px solid var(--gray-200)}
+.fb-preview .fb-domain{font-size:.7rem;color:var(--gray-500);text-transform:uppercase;letter-spacing:.03em;margin-bottom:.2rem}
+.fb-preview .fb-title{font-size:.95rem;font-weight:700;color:var(--gray-900);line-height:1.3;margin-bottom:.15rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.fb-preview .fb-desc{font-size:.8rem;color:var(--gray-500);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+
+/* LINE Preview */
+.line-preview{background:#fff;border:1px solid var(--gray-200);border-radius:12px;overflow:hidden;max-width:300px;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif}
+.line-preview .line-img{width:100%;aspect-ratio:1.91/1;background:var(--gray-100);display:flex;align-items:center;justify-content:center;color:var(--gray-400);font-size:.85rem;overflow:hidden}
+.line-preview .line-img img{width:100%;height:100%;object-fit:cover}
+.line-preview .line-body{padding:.6rem .75rem}
+.line-preview .line-title{font-size:.85rem;font-weight:700;color:var(--gray-900);line-height:1.3;margin-bottom:.15rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.line-preview .line-desc{font-size:.75rem;color:var(--gray-500);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+/* Warnings */
+.warnings-list{list-style:none;display:flex;flex-direction:column;gap:.5rem}
+.warning-item{display:flex;align-items:flex-start;gap:.5rem;padding:.6rem .85rem;border-radius:var(--radius);font-size:.85rem;line-height:1.5}
+.warning-item.error{background:var(--red-light);color:var(--red)}
+.warning-item.warn{background:var(--yellow-light);color:var(--yellow)}
+.warning-item.ok{background:var(--green-light);color:var(--green)}
+.warning-item .w-icon{flex-shrink:0;font-size:1rem;line-height:1.4}
+.no-warnings{text-align:center;padding:1.5rem;color:var(--gray-400);font-size:.9rem}
+
+/* Checklist */
+.checklist{list-style:none;display:flex;flex-direction:column;gap:.4rem}
+.checklist li{display:flex;align-items:flex-start;gap:.5rem;padding:.5rem .75rem;font-size:.85rem;border-radius:6px;line-height:1.5}
+.checklist li.pass{background:var(--green-light);color:var(--green)}
+.checklist li.fail{background:var(--red-light);color:var(--red)}
+.checklist li.info{background:var(--primary-light);color:var(--primary)}
+.checklist li .ck-icon{flex-shrink:0;font-size:1rem}
+
+/* Score */
+.score-area{text-align:center;padding:1.5rem;margin-bottom:1rem}
+.score-circle{display:inline-flex;align-items:center;justify-content:center;width:100px;height:100px;border-radius:50%;font-size:2rem;font-weight:800;color:#fff;margin-bottom:.75rem}
+.score-circle.good{background:var(--green)}
+.score-circle.ok{background:var(--yellow)}
+.score-circle.bad{background:var(--red)}
+.score-label{font-size:.95rem;color:var(--gray-600);font-weight:600}
+
+/* Footer CTA */
+.footer-cta{background:linear-gradient(135deg,#1e3a5f 0%,#1e40af 100%);color:#fff;padding:3rem 1rem;margin-top:2rem}
+.footer-cta .cta-inner{max-width:800px;margin:0 auto}
+.cta-block{margin-bottom:2rem}
+.cta-block:last-child{margin-bottom:0}
+.cta-block h3{font-size:1.05rem;font-weight:700;margin-bottom:.5rem;display:flex;align-items:center;gap:.4rem}
+.cta-block p{font-size:.875rem;opacity:.9;line-height:1.7;margin-bottom:.5rem}
+.cta-block a{color:#93c5fd;font-weight:600}
+.cta-block a:hover{color:#bfdbfe}
+.cta-links{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:.75rem}
+.cta-link{display:inline-flex;align-items:center;gap:.35rem;padding:.5rem 1.1rem;background:rgba(255,255,255,.12);border-radius:var(--radius);color:#fff;font-size:.85rem;font-weight:500;transition:background .2s}
+.cta-link:hover{background:rgba(255,255,255,.22);text-decoration:none}
+.footer-bottom{text-align:center;padding:1.25rem 1rem;background:var(--gray-900);color:var(--gray-400);font-size:.78rem}
+.footer-bottom a{color:var(--gray-400)}
+
+/* Responsive */
+@media(max-width:640px){
+  .header h1{font-size:1.35rem}
+  .container{padding:1rem .75rem}
+  .card{padding:1.15rem}
+  .btn-row{flex-direction:column}
+  .btn{justify-content:center}
+  .ogp-table th{width:120px}
+  .twitter-summary .tw-sm-img{width:100px;min-height:100px}
+  .preview-container{max-width:100%}
+  .cta-links{flex-direction:column}
+  .tabs{gap:0}
+  .tab-btn{padding:.5rem .85rem;font-size:.8rem}
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <h1>OGPチェッカー</h1>
+  <p>HTMLソースからOGPタグを解析し、各SNSでのシェア表示をプレビュー。不足タグの警告と推奨設定の診断も行います。</p>
+</header>
+
+<main class="container">
+  <!-- Input -->
+  <div class="card input-section">
+    <h2><span class="icon">📋</span> HTMLソースを貼り付け</h2>
+    <textarea id="htmlInput" placeholder="チェックしたいページのHTMLソースをここに貼り付けてください。&#10;&#10;取得方法：ブラウザでページを開き、右クリック →「ページのソースを表示」→ 全選択してコピー&#10;（または Ctrl+U でソース表示）"></textarea>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="analyzeOGP()">解析する</button>
+      <button class="btn btn-secondary" onclick="loadSample()">サンプルで試す</button>
+      <button class="btn btn-secondary" onclick="clearAll()">クリア</button>
+    </div>
+    <p class="hint">※ HTMLソースはサーバーに送信されません。すべてブラウザ内で解析されます。</p>
+  </div>
+
+  <!-- Results -->
+  <div id="results">
+    <!-- Score -->
+    <div class="card">
+      <div class="score-area">
+        <div class="score-circle" id="scoreCircle">-</div>
+        <div class="score-label" id="scoreLabel">OGPスコア</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="card">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="tab-data">検出データ</button>
+        <button class="tab-btn" data-tab="tab-twitter">Twitter</button>
+        <button class="tab-btn" data-tab="tab-facebook">Facebook</button>
+        <button class="tab-btn" data-tab="tab-line">LINE</button>
+        <button class="tab-btn" data-tab="tab-warnings">診断結果</button>
+        <button class="tab-btn" data-tab="tab-checklist">チェックリスト</button>
+      </div>
+
+      <!-- Tab: Data -->
+      <div class="tab-panel active" id="tab-data">
+        <table class="ogp-table" id="ogpTable"></table>
+      </div>
+
+      <!-- Tab: Twitter -->
+      <div class="tab-panel" id="tab-twitter">
+        <h3 style="font-size:.9rem;color:var(--gray-500);margin-bottom:1rem" id="twitterCardType">Twitter Card プレビュー</h3>
+        <div class="preview-container" id="twitterPreview"></div>
+      </div>
+
+      <!-- Tab: Facebook -->
+      <div class="tab-panel" id="tab-facebook">
+        <h3 style="font-size:.9rem;color:var(--gray-500);margin-bottom:1rem">Facebook シェア プレビュー</h3>
+        <div class="preview-container" id="facebookPreview"></div>
+      </div>
+
+      <!-- Tab: LINE -->
+      <div class="tab-panel" id="tab-line">
+        <h3 style="font-size:.9rem;color:var(--gray-500);margin-bottom:1rem">LINE シェア プレビュー</h3>
+        <div class="preview-container" id="linePreview"></div>
+      </div>
+
+      <!-- Tab: Warnings -->
+      <div class="tab-panel" id="tab-warnings">
+        <ul class="warnings-list" id="warningsList"></ul>
+      </div>
+
+      <!-- Tab: Checklist -->
+      <div class="tab-panel" id="tab-checklist">
+        <ul class="checklist" id="checklistEl"></ul>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Footer CTA -->
+<footer class="footer-cta">
+  <div class="cta-inner">
+    <div class="cta-block">
+      <h3>このツールを作った人</h3>
+      <p>デジタルクラフト合同会社 — Web集客に特化した制作・マーケティング支援会社です。<br>中小企業・個人事業主のビジネス成長をテクノロジーとマーケティングの両面からサポートしています。</p>
+    </div>
+    <div class="cta-block">
+      <h3>Web集客でお困りですか？</h3>
+      <p>OGP設定の最適化からSNS運用まで、プロにおまかせください。まずはお気軽にご相談を。</p>
+      <div class="cta-links">
+        <a href="https://coconala.com/" class="cta-link" target="_blank" rel="noopener">ココナラで相談する →</a>
+      </div>
+    </div>
+    <div class="cta-block">
+      <h3>もっと詳しいSEO対策はこちら</h3>
+      <p>OGP設定の基礎から応用テクニックまで、実践的なノウハウを公開中です。</p>
+      <div class="cta-links">
+        <a href="https://note.com/" class="cta-link" target="_blank" rel="noopener">Note記事を読む →</a>
+      </div>
+    </div>
+    <div class="cta-block">
+      <h3>他の無料ツール</h3>
+      <div class="cta-links">
+        <a href="../meta-generator/" class="cta-link">メタタグジェネレーター →</a>
+      </div>
+    </div>
+  </div>
+</footer>
+<div class="footer-bottom">
+  <p>&copy; 2026 デジタルクラフト合同会社</p>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // --- Tab switching ---
+  document.querySelectorAll('.tab-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+      document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // --- Helpers ---
+  function esc(str) {
+    if (!str) return '';
+    var d = document.createElement('div');
+    d.appendChild(document.createTextNode(str));
+    return d.innerHTML;
+  }
+
+  function extractDomain(url) {
+    if (!url) return '';
+    try {
+      return new URL(url).hostname;
+    } catch(e) {
+      var m = url.match(/^https?:\/\/([^\/]+)/);
+      return m ? m[1] : url;
+    }
+  }
+
+  function truncate(str, len) {
+    if (!str) return '';
+    return str.length > len ? str.substring(0, len) + '…' : str;
+  }
+
+  // --- Parse OGP from HTML string ---
+  function parseOGP(html) {
+    var parser = new DOMParser();
+    var doc = parser.parseFromString(html, 'text/html');
+    var data = {};
+
+    // og: tags
+    var ogProps = ['og:title','og:description','og:image','og:image:width','og:image:height',
+                   'og:url','og:type','og:site_name','og:locale'];
+    ogProps.forEach(function(prop) {
+      var el = doc.querySelector('meta[property="' + prop + '"]');
+      if (el) data[prop] = el.getAttribute('content') || '';
+    });
+
+    // twitter: tags
+    var twProps = ['twitter:card','twitter:title','twitter:description','twitter:image','twitter:site','twitter:creator'];
+    twProps.forEach(function(prop) {
+      var el = doc.querySelector('meta[name="' + prop + '"]') || doc.querySelector('meta[property="' + prop + '"]');
+      if (el) data[prop] = el.getAttribute('content') || '';
+    });
+
+    // fallbacks from standard tags
+    var titleEl = doc.querySelector('title');
+    if (titleEl) data['_title'] = titleEl.textContent || '';
+
+    var descEl = doc.querySelector('meta[name="description"]');
+    if (descEl) data['_description'] = descEl.getAttribute('content') || '';
+
+    var canonicalEl = doc.querySelector('link[rel="canonical"]');
+    if (canonicalEl) data['_canonical'] = canonicalEl.getAttribute('href') || '';
+
+    return data;
+  }
+
+  // --- Effective values (with fallbacks) ---
+  function effective(data) {
+    return {
+      title: data['og:title'] || data['twitter:title'] || data['_title'] || '',
+      description: data['og:description'] || data['twitter:description'] || data['_description'] || '',
+      image: data['og:image'] || data['twitter:image'] || '',
+      url: data['og:url'] || data['_canonical'] || '',
+      type: data['og:type'] || '',
+      siteName: data['og:site_name'] || '',
+      twitterCard: data['twitter:card'] || '',
+      imageWidth: parseInt(data['og:image:width']) || 0,
+      imageHeight: parseInt(data['og:image:height']) || 0
+    };
+  }
+
+  // --- Render OGP Table ---
+  function renderTable(data) {
+    var rows = [
+      ['og:title', data['og:title']],
+      ['og:description', data['og:description']],
+      ['og:image', data['og:image']],
+      ['og:image:width', data['og:image:width']],
+      ['og:image:height', data['og:image:height']],
+      ['og:url', data['og:url']],
+      ['og:type', data['og:type']],
+      ['og:site_name', data['og:site_name']],
+      ['og:locale', data['og:locale']],
+      ['twitter:card', data['twitter:card']],
+      ['twitter:title', data['twitter:title']],
+      ['twitter:description', data['twitter:description']],
+      ['twitter:image', data['twitter:image']],
+      ['twitter:site', data['twitter:site']],
+      ['twitter:creator', data['twitter:creator']],
+      ['title (HTML)', data['_title']],
+      ['meta description', data['_description']],
+      ['canonical URL', data['_canonical']]
+    ];
+    var html = '';
+    rows.forEach(function(r) {
+      var val = r[1];
+      var cell = val ? esc(val) : '<span class="empty">未設定</span>';
+      // Show image thumbnail for image URLs
+      if (val && (r[0].indexOf('image') !== -1) && val.match(/^https?:\/\//)) {
+        cell = '<img src="' + esc(val) + '" style="max-width:200px;max-height:80px;display:block;margin-bottom:4px;border-radius:4px" onerror="this.style.display=\'none\'" alt="">' + esc(val);
+      }
+      html += '<tr><th>' + esc(r[0]) + '</th><td>' + cell + '</td></tr>';
+    });
+    document.getElementById('ogpTable').innerHTML = html;
+  }
+
+  // --- Render Twitter Preview ---
+  function renderTwitter(eff) {
+    var container = document.getElementById('twitterPreview');
+    var cardType = eff.twitterCard || 'summary_large_image';
+    document.getElementById('twitterCardType').textContent = 'Twitter Card プレビュー（' + cardType + '）';
+
+    var domain = extractDomain(eff.url);
+    var imgHtml;
+
+    if (cardType === 'summary') {
+      // Small card
+      imgHtml = eff.image
+        ? '<img src="' + esc(eff.image) + '" onerror="this.parentElement.innerHTML=\'画像読込不可\'" alt="">'
+        : '画像なし';
+      container.innerHTML =
+        '<div class="twitter-summary">' +
+          '<div class="tw-sm-img">' + imgHtml + '</div>' +
+          '<div class="tw-sm-body">' +
+            '<div class="tw-domain">' + esc(domain) + '</div>' +
+            '<div class="tw-title">' + esc(truncate(eff.title, 70)) + '</div>' +
+            '<div class="tw-desc">' + esc(truncate(eff.description, 200)) + '</div>' +
+          '</div>' +
+        '</div>';
+    } else {
+      // Large image card (default)
+      imgHtml = eff.image
+        ? '<img src="' + esc(eff.image) + '" onerror="this.parentElement.innerHTML=\'画像読込不可\'" alt="">'
+        : '画像なし';
+      container.innerHTML =
+        '<div class="twitter-preview">' +
+          '<div class="tw-img">' + imgHtml + '</div>' +
+          '<div class="tw-body">' +
+            '<div class="tw-domain">' + esc(domain) + '</div>' +
+            '<div class="tw-title">' + esc(truncate(eff.title, 70)) + '</div>' +
+            '<div class="tw-desc">' + esc(truncate(eff.description, 200)) + '</div>' +
+          '</div>' +
+        '</div>';
+    }
+  }
+
+  // --- Render Facebook Preview ---
+  function renderFacebook(eff) {
+    var domain = extractDomain(eff.url).toUpperCase();
+    var imgHtml = eff.image
+      ? '<img src="' + esc(eff.image) + '" onerror="this.parentElement.innerHTML=\'画像読込不可\'" alt="">'
+      : '画像なし';
+    document.getElementById('facebookPreview').innerHTML =
+      '<div class="fb-preview">' +
+        '<div class="fb-img">' + imgHtml + '</div>' +
+        '<div class="fb-body">' +
+          '<div class="fb-domain">' + esc(domain) + '</div>' +
+          '<div class="fb-title">' + esc(truncate(eff.title, 65)) + '</div>' +
+          '<div class="fb-desc">' + esc(truncate(eff.description, 155)) + '</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  // --- Render LINE Preview ---
+  function renderLINE(eff) {
+    var imgHtml = eff.image
+      ? '<img src="' + esc(eff.image) + '" onerror="this.parentElement.innerHTML=\'画像読込不可\'" alt="">'
+      : '画像なし';
+    document.getElementById('linePreview').innerHTML =
+      '<div class="line-preview">' +
+        '<div class="line-img">' + imgHtml + '</div>' +
+        '<div class="line-body">' +
+          '<div class="line-title">' + esc(truncate(eff.title, 100)) + '</div>' +
+          '<div class="line-desc">' + esc(truncate(eff.description, 120)) + '</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  // --- Warnings ---
+  function generateWarnings(data, eff) {
+    var w = [];
+
+    // Required tags
+    if (!data['og:title']) w.push({level:'error', text:'og:title が設定されていません。SNSシェア時にタイトルが正しく表示されない可能性があります。'});
+    if (!data['og:description']) w.push({level:'error', text:'og:description が設定されていません。説明文が表示されず、クリック率が低下する恐れがあります。'});
+    if (!data['og:image']) w.push({level:'error', text:'og:image が設定されていません。シェア時にサムネイル画像が表示されません。'});
+    if (!data['og:url']) w.push({level:'warn', text:'og:url が設定されていません。正規URLを指定することで重複を防げます。'});
+    if (!data['og:type']) w.push({level:'warn', text:'og:type が設定されていません。「website」または「article」を推奨します。'});
+
+    // Twitter
+    if (!data['twitter:card']) w.push({level:'warn', text:'twitter:card が設定されていません。「summary_large_image」を推奨します。'});
+    if (!data['twitter:title'] && !data['og:title']) w.push({level:'warn', text:'twitter:title が設定されていません（og:titleでの代替もありません）。'});
+
+    // Content quality
+    if (eff.title && eff.title.length > 60) w.push({level:'warn', text:'タイトルが60文字を超えています（' + eff.title.length + '文字）。SNSでの表示が途切れる場合があります。'});
+    if (eff.title && eff.title.length < 10) w.push({level:'warn', text:'タイトルが短すぎます（' + eff.title.length + '文字）。内容が伝わるよう15〜60文字程度を推奨します。'});
+    if (eff.description && eff.description.length > 160) w.push({level:'warn', text:'ディスクリプションが160文字を超えています（' + eff.description.length + '文字）。80〜120文字程度を推奨します。'});
+
+    // Image
+    if (eff.image && !eff.image.match(/^https:\/\//)) {
+      if (eff.image.match(/^http:\/\//)) {
+        w.push({level:'warn', text:'og:image がHTTPです。HTTPSを推奨します。'});
+      } else {
+        w.push({level:'warn', text:'og:image が絶対URLではありません。https:// で始まる絶対URLを指定してください。'});
+      }
+    }
+    if (data['og:image'] && !data['og:image:width']) w.push({level:'warn', text:'og:image:width が設定されていません。画像サイズを明示すると読み込み速度が向上します。'});
+    if (data['og:image'] && !data['og:image:height']) w.push({level:'warn', text:'og:image:height が設定されていません。画像サイズを明示すると読み込み速度が向上します。'});
+    if (eff.imageWidth && eff.imageHeight) {
+      var ratio = eff.imageWidth / eff.imageHeight;
+      if (ratio < 1.7 || ratio > 2.1) w.push({level:'warn', text:'OGP画像のアスペクト比が1.91:1から離れています（現在 ' + ratio.toFixed(2) + ':1）。推奨は1200×630pxです。'});
+      if (eff.imageWidth < 600) w.push({level:'warn', text:'OGP画像の幅が600px未満です（' + eff.imageWidth + 'px）。最低600px、推奨1200px以上です。'});
+    }
+
+    // Good practices
+    if (data['og:title'] && data['og:description'] && data['og:image'] && data['og:url']) {
+      w.push({level:'ok', text:'基本的なOGPタグ（title, description, image, url）がすべて設定されています。'});
+    }
+    if (data['twitter:card']) {
+      w.push({level:'ok', text:'Twitter Card タグが設定されています。'});
+    }
+    if (data['og:site_name']) {
+      w.push({level:'ok', text:'og:site_name が設定されています。'});
+    }
+
+    return w;
+  }
+
+  function renderWarnings(warnings) {
+    var el = document.getElementById('warningsList');
+    if (warnings.length === 0) {
+      el.innerHTML = '<li class="no-warnings">解析結果がありません</li>';
+      return;
+    }
+    // Sort: errors first, then warnings, then ok
+    var order = {error:0, warn:1, ok:2};
+    warnings.sort(function(a,b) { return order[a.level] - order[b.level]; });
+    var icons = {error:'❌', warn:'⚠️', ok:'✅'};
+    el.innerHTML = warnings.map(function(w) {
+      return '<li class="warning-item ' + w.level + '"><span class="w-icon">' + icons[w.level] + '</span><span>' + esc(w.text) + '</span></li>';
+    }).join('');
+  }
+
+  // --- Checklist ---
+  function generateChecklist(data, eff) {
+    var items = [];
+
+    items.push({
+      pass: !!data['og:title'],
+      text: 'og:title を設定する',
+      detail: data['og:title'] ? '設定済み（' + data['og:title'].length + '文字）' : '未設定'
+    });
+    items.push({
+      pass: !!data['og:description'],
+      text: 'og:description を設定する',
+      detail: data['og:description'] ? '設定済み（' + data['og:description'].length + '文字）' : '未設定'
+    });
+    items.push({
+      pass: !!data['og:image'],
+      text: 'og:image を設定する',
+      detail: data['og:image'] ? '設定済み' : '未設定'
+    });
+    items.push({
+      pass: !!data['og:url'],
+      text: 'og:url を設定する',
+      detail: data['og:url'] ? '設定済み' : '未設定'
+    });
+    items.push({
+      pass: !!data['og:type'],
+      text: 'og:type を設定する（website / article）',
+      detail: data['og:type'] ? '「' + data['og:type'] + '」設定済み' : '未設定'
+    });
+    items.push({
+      pass: !!data['og:site_name'],
+      text: 'og:site_name を設定する',
+      detail: data['og:site_name'] ? '「' + data['og:site_name'] + '」設定済み' : '未設定'
+    });
+    items.push({
+      pass: !!data['twitter:card'],
+      text: 'twitter:card を設定する',
+      detail: data['twitter:card'] ? '「' + data['twitter:card'] + '」設定済み' : '未設定'
+    });
+    items.push({
+      pass: eff.title.length >= 10 && eff.title.length <= 60,
+      text: 'タイトルを15〜60文字に収める',
+      detail: eff.title ? eff.title.length + '文字' : '未設定'
+    });
+    items.push({
+      pass: eff.description.length >= 40 && eff.description.length <= 160,
+      text: 'ディスクリプションを80〜120文字程度にする',
+      detail: eff.description ? eff.description.length + '文字' : '未設定'
+    });
+    items.push({
+      pass: eff.imageWidth >= 1200 && eff.imageHeight >= 630,
+      text: 'OGP画像を1200×630px以上にする',
+      detail: eff.imageWidth && eff.imageHeight ? eff.imageWidth + '×' + eff.imageHeight + 'px' : 'サイズ情報なし'
+    });
+    items.push({
+      pass: !!(eff.image && eff.image.match(/^https:\/\//)),
+      text: 'OGP画像はHTTPS URLで指定する',
+      detail: eff.image ? (eff.image.match(/^https:\/\//) ? 'HTTPS 使用中' : 'HTTPSではありません') : '画像未設定'
+    });
+    items.push({
+      pass: !!(data['og:image:width'] && data['og:image:height']),
+      text: 'og:image:width / og:image:height を設定する',
+      detail: data['og:image:width'] ? data['og:image:width'] + '×' + (data['og:image:height']||'?') : '未設定'
+    });
+
+    return items;
+  }
+
+  function renderChecklist(items) {
+    var el = document.getElementById('checklistEl');
+    el.innerHTML = items.map(function(item) {
+      var cls = item.pass ? 'pass' : 'fail';
+      var icon = item.pass ? '✅' : '❌';
+      return '<li class="' + cls + '"><span class="ck-icon">' + icon + '</span><span><strong>' + esc(item.text) + '</strong><br><small style="opacity:.8">' + esc(item.detail) + '</small></span></li>';
+    }).join('');
+  }
+
+  // --- Score ---
+  function calcScore(data, eff, warnings, checklist) {
+    var total = checklist.length;
+    var passed = checklist.filter(function(c) { return c.pass; }).length;
+    return Math.round((passed / total) * 100);
+  }
+
+  function renderScore(score) {
+    var circle = document.getElementById('scoreCircle');
+    var label = document.getElementById('scoreLabel');
+    circle.textContent = score;
+    circle.className = 'score-circle';
+    if (score >= 80) {
+      circle.classList.add('good');
+      label.textContent = '素晴らしい！OGP設定はほぼ完璧です';
+    } else if (score >= 50) {
+      circle.classList.add('ok');
+      label.textContent = '改善の余地があります。診断結果を確認してください';
+    } else {
+      circle.classList.add('bad');
+      label.textContent = 'OGP設定に不足があります。早急な対応を推奨します';
+    }
+  }
+
+  // --- Main ---
+  window.analyzeOGP = function() {
+    var html = document.getElementById('htmlInput').value.trim();
+    if (!html) {
+      alert('HTMLソースを貼り付けてください。');
+      return;
+    }
+
+    var data = parseOGP(html);
+    var eff = effective(data);
+    var warnings = generateWarnings(data, eff);
+    var checklist = generateChecklist(data, eff);
+    var score = calcScore(data, eff, warnings, checklist);
+
+    renderTable(data);
+    renderTwitter(eff);
+    renderFacebook(eff);
+    renderLINE(eff);
+    renderWarnings(warnings);
+    renderChecklist(checklist);
+    renderScore(score);
+
+    document.getElementById('results').style.display = 'block';
+    document.getElementById('results').scrollIntoView({behavior: 'smooth', block: 'start'});
+  };
+
+  window.loadSample = function() {
+    document.getElementById('htmlInput').value =
+'<!DOCTYPE html>\n' +
+'<html lang="ja">\n' +
+'<head>\n' +
+'<meta charset="UTF-8">\n' +
+'<title>サンプルページ｜デジタルクラフト合同会社</title>\n' +
+'<meta name="description" content="これはOGPチェッカーのテスト用サンプルページです。各SNSでの表示をプレビューできます。">\n' +
+'<meta property="og:title" content="サンプルページ｜デジタルクラフト合同会社">\n' +
+'<meta property="og:description" content="これはOGPチェッカーのテスト用サンプルページです。各SNSでの表示をプレビューできます。">\n' +
+'<meta property="og:image" content="https://placehold.co/1200x630/2563EB/white?text=OGP+Sample">\n' +
+'<meta property="og:image:width" content="1200">\n' +
+'<meta property="og:image:height" content="630">\n' +
+'<meta property="og:url" content="https://example.com/sample">\n' +
+'<meta property="og:type" content="website">\n' +
+'<meta property="og:site_name" content="デジタルクラフト合同会社">\n' +
+'<meta name="twitter:card" content="summary_large_image">\n' +
+'<meta name="twitter:title" content="サンプルページ｜デジタルクラフト合同会社">\n' +
+'<meta name="twitter:description" content="OGPチェッカーのテスト用サンプルです。">\n' +
+'<meta name="twitter:image" content="https://placehold.co/1200x630/2563EB/white?text=OGP+Sample">\n' +
+'</head>\n' +
+'<body><h1>サンプルページ</h1></body>\n' +
+'</html>';
+    analyzeOGP();
+  };
+
+  window.clearAll = function() {
+    document.getElementById('htmlInput').value = '';
+    document.getElementById('results').style.display = 'none';
+  };
+})();
+</script>
+</body>
+</html>
