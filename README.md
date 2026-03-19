@@ -1,0 +1,1 @@
+# Digital Craft Tools\n\nFree web tools for developers and freelancers.\n\n## Tools\n\n- [OGP Checker](./ogp-checker/index.html)\n- [Meta Tag Generator](./meta-generator/index.html)\n- [Prompt Generator](./prompt-generator/index.html)\n- [Income Simulator](./income-simulator/index.html)\n\n© 2026 Digital Craft LLC
